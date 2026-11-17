@@ -1,13 +1,16 @@
 from fastapi import FastAPI
-from app.schemas import CropPriceRequest, CropPriceResponse
-from app.model import predict_price
+from app.routers import prediction, farmer, vendor, auth
+from app.core.config import settings
+from app import models
 
-app = FastAPI(title="Crop Price Prediction API")
+app = FastAPI(title=settings.PROJECT_NAME)
 
-@app.post("/predict", response_model=CropPriceResponse)
-def predict(data: CropPriceRequest):
-    price = predict_price(data)
-    return {"predicted_price": round(price, 2)}
+# Include Routers
+app.include_router(auth.router, prefix="/auth", tags=["Authentication"])
+app.include_router(prediction.router, prefix="/prediction", tags=["ML Prediction"])
+app.include_router(farmer.router, prefix="/farmer", tags=["Farmer APIs"])
+app.include_router(vendor.router, prefix="/vendor", tags=["Vendor APIs"])
+
 @app.get("/")
 def home():
-    return {"message": "FastAPI is running on port 9000"}
+    return {"message": f"{settings.PROJECT_NAME} is running"}
